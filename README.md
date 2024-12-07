@@ -1,2 +1,1 @@
-# notes
-A svelte + astro static website for showcasing markdown notes.
+A svelte + astro static website for showcasing markdown notes based on https://github.com/flo-bit/blog-template

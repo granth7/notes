@@ -1,0 +1,79 @@
+---
+title: Talos Kubernetes - Initial Machine Setup
+description: How to install Talos Kubernetes via USB or PXE.
+pubDate: Dec 7 2024
+published: false
+heroImage: /src/assets/mini-pc.jpg
+tags:
+  - kubernetes
+  - talos
+disableComments: false
+attribution: mini-PC - In Hand, <a href="https://commons.wikimedia.org/wiki/File:ZOTC_ZBOX_mini-PC_-_In_Hand_(5763974959).jpg">VIA Gallery from Hsintien, Taiwan</a>, <a href="https://creativecommons.org/licenses/by/2.0">CC BY 2.0</a>, via Wikimedia Commons
+---
+### About
+Please refer to [onedr0p/cluster-template](https://github.com/onedr0p/cluster-template) for complete instructions.
+This following information is supplemental to onedr0p's instructions since it includes steps specific to my setup. 
+
+### Prerequisites 
+- At least 3 bare metal machines with x86_64 cpus (amd64), UEFI and optionally secure boot enabled. See [onedr0p/cluster-template: A template for deploying a Talos Kubernetes cluster including Flux for GitOps (github.com)](https://github.com/onedr0p/cluster-template) for full specs and setup instructions.
+- (If installing from USB): A large enough usb stick and a Talos iso from https://factory.talos.dev/. Select amd64 and optionally tick the SecureBoot slider. No extensions.
+- (If PXE Booting): A router you have access to that is configured with OPNSense.
+## Instructions 
+
+Select a boot method and follow the instructions.
+### (SecureBoot from USB ISO)
+1. Download Ventoy from [Releases · ventoy/Ventoy (github.com)](https://github.com/ventoy/Ventoy/releases) to your workstation.
+2. Verify sha-256 checksum and extract.
+3. Plug in usb drive and verify it's readable by your file system (drive appears).
+4. Run Ventoy disk utility, select your usb and click install. Hit yes to confirm you want to wipe everything on the drive, and then again for the double-check. 
+5. Once complete, the drive should be empty. Drag or copy/paste the SecureBoot iso onto the empty drive. The usb drive is now ready to go and can be ejected. 
+
+Ventoy splits the drive into multiple partitions, one for your isos and one for the Ventoy utility tools. You can place as many isos as can fit on the usb, and then upon boot, the Ventoy GUI will appear and you can select the iso you want to boot. This means you can boot into multiple operating systems easily, all from a single usb. Ventoy will also handle the custom secure boot keys, which other single iso flash tools like Rufus cannot.
+
+6. Make sure the mini-PC is powered off and is connected to a display and keyboard or KVM, then insert the usb drive.
+7. Tap F10 (may differ based on your hardware) on the keyboard repeatedly to enter the UEFI firmware settings.
+8. Go to Advanced > Boot menu > and set the USB to be the first boot option.
+9. Go to Advanced > Secure Boot Configuration > Legacy mode disabled and SecureBoot mode disabled
+10.  Check 'Clear boot keys', then Save and Exit and let it boot. (SecureBoot needs to be disabled initially, you should see a message saying it will be disabled. We'll re-enable it later.)
+11. Type in the 4 digit pin to confirm disabling SecureBoot if it was previously enabled.
+12. Let the machine reboot, it will boot into Ventoy. DO NOT CONTINUE. Power cycle the machine and go back into the UEFI firmware settings (F10 for HP machines).
+13. Go to Advanced > Secure Boot Configuration > Legacy mode disable and SecureBoot enable. Save and Exit and let it boot
+14. A blue screen should appear with a message about Security Authentication failed. That's because we need to import the certificate key from Ventoy that will enable SecureBoot for our isos. Hit okay and follow these instructions from the Ventoy docs: [secure . Ventoy](https://www.ventoy.net/en/doc_secure.html)
+15. Select Browse hard drive for MOK key
+16. Select the drive that starts with VTOY
+17. Select the file labeled along the lines of 'USE_THIS_FOR_MOK_KEY.cer'
+18. The key should import successfully and Ventoy will launch. You can boot into the Talos ISO from here.
+19. Proceed with the instructions in [onedr0p/cluster-template: A template for deploying a Talos Kubernetes cluster including Flux for GitOps](https://github.com/onedr0p/cluster-template)
+
+### PXE Boot
+
+We need to setup [OPNSense as a PXE boot server (opnsense.org)](https://forum.opnsense.org/index.php?topic=25003.0)
+
+Prerequisites:  
+- A shell account that can elevate permissions with sudo on OPNSense.  
+- A shell account that can elevate permissions with sudo on a local webserver.  
+- Internet connection to download some necessary files. I use a separate computer and then transfer to the firewall. Some will prefer to do it all on the firewall itself.  
+- Some familiarity with basic shell commands and utilities like wget, nano, etc.  
+  
+Now we start.  
+1. Install the tftp plugin in OPNSense  
+2. Go to System > Firmware > Plugins. Search for os-tftp. Click on the + sign at the end of the row to install it.  You will get a message “The root folder for transfering files is /usr/local/tftp.”  Once the WebUI refreshes you’ll have an entry in Services > TFTP > General where the service can be enabled or disabled.  Check the box next to enable and then click apply.
+3. On a shell connect to OPNSense via ssh and verify the path exists. For me it didn’t so I created it.  Code: `$ sudo mkdir -p /usr/local/tftp`
+4. Next, cd to the /usr/local/tftp/ folder and download the Talos factory iso file via the following command: curl -O [https://boot.netboot.xyz/ipxe/netboot.xyz.efi](https://boot.netboot.xyz/ipxe/netboot.xyz.efi)
+5. Back in the OPNsense GUI, navigate to Services > Kea DHCP [new] > Kea DHCPv4 > Subnets. Click on the subnet you want to use. In the TFTP server section enter the IP of OPNsense. Leave the TFTP bootfile name section empty.
+6. Scroll down to Network booting > Check Enable network booting
+7. Set x64 UEFI/EBC (64-bit) filename: netboot.xyz.efi
+8. Set iPXE boot filename to: netboot.xyz.efi
+9. Set root-path string: /usr/local/tftp/netboot.xyz.efi
+10. Click on Save, then Apply.
+11. Make sure PXE boot is enabled in the UEFI firmware settings. Priority should be lower than physical device, so if there is already an OS installed you should wipe it so the machines will boot to PXE.
+12. Boot the machines, netboot.xyz should load. Find and install the Talos OS, you may have to scroll.
+13. If everything went well, Talos should boot and your machines will go into maintenance mode as they await configuration. 
+14. Proceed with the instructions in [onedr0p/cluster-template: A template for deploying a Talos Kubernetes cluster including Flux for GitOps](https://github.com/onedr0p/cluster-template)
+
+### Next 
+See [Post Install Details (Split DNS)](../../posts/post-install-details).
+### References
+[PXE on OPNsense (github.com)](https://gist.github.com/azhang/d8304d8dd4b4c165b67ab57ae7e1ede0)
+[OPN as a PXE boot server (opnsense.org)](https://forum.opnsense.org/index.php?topic=25003.0)
+[Using tftp netboot in pfsense for pxe boot server (youtube.com)](https://www.youtube.com/watch?v=_fiZxx0USk0&t=116s)

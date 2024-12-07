@@ -1,0 +1,37 @@
+---
+title: Setup Split DNS via Unbound DNS (For Talos Kubernetes)
+description: Allow Talos Flux cluster to access local resources.
+pubDate: Dec 7 2024
+published: false
+heroImage: /src/assets/split-dns.png
+tags:
+  - networking
+  - opnsense
+disableComments: false
+attribution: Split DNS Illustration, <a href="https://commons.wikimedia.org/wiki/File:Split-DNS-Illustration_de.png">Xneb20</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>, via Wikimedia Commons
+---
+### Setup
+In OPNsense:
+- To enable Unbound DNS, Go to Services > Unbound DNS: General. Check the box next to 'Enable Unbound' then select Apply.
+- Go to Services > Unbound DNS: Overrides > Domain Overrides
+- Point yourdomain.com to the k8s_gateway IP if you are setting up a Talos Flux cluster. This is set in the `config.yaml` file with the `boostrap_cloudflare.gateway_vip` variable.
+
+### Caveat
+Setting up split DNS with a domain override will allow local devices running on the same network as the Talos Flux cluster to access cluster resources directly on the local network, instead of being treated as external connections (as in the default case without split DNS). One drawback of this is that if you ever want to use subdomain.yourdomain.com to deploy, say, a blog hosted externally on github pages at subdomain.yourdomain.com, when trying to access the external site from your local devices, split DNS will route your device as if subdomain.yourdomain.com is a local address you are trying to access directly from within the network. Since the site is hosted externally but resolving to an internal address, your local devices won't be able to resolve the correct ip of the blog. 
+
+One way to overcome this is to add a host override within Unbound DNS to point to the ip of the blog on github pages. 
+
+### Add a Host Override in Unbound DNS running Split DNS
+- Use a device connected to a network outside your local network, for example by disabling WiFi on your phone and using mobile data.
+- ping subdomain.yourdomain.com from the external network. I use Termux for Android to run the ping command. Copy the displayed ip.
+- In OPNsense, go to Services > Unbound DNS: Overrides >Host Overrides
+- Add a Host Override by selecting the '+' icon.
+- Enter the subdomain for the host, yourdomain.com for the domain, type > A (IPV4 address), IP address > copy in the ip you got from pinging.
+- Select 'Save'
+- Select 'Apply'
+- Navigate to subdomain.yourdomain.com. The website should now correctly resolve to the external ip for all local devices in the network. 
+
+**Note:** This only works so long as the website's ip remains static. I'm using github pages to host my site, so we'll see if it changes.
+
+### References
+[How to Configure Split DNS in OPNsense using Unbound DNS (homenetworkguy.com)](https://homenetworkguy.com/how-to/configure-split-dns-opnsense-using-unbound/)

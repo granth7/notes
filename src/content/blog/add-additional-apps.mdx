@@ -1,0 +1,120 @@
+---
+title: Talos Kubernetes - Add Existing Apps
+description: How to add existing, prebuilt apps to your cluster.
+pubDate: Dec 7 2024
+published: false
+heroImage: /src/assets/kube-apps.png
+tags:
+  - kubernetes
+  - talos
+disableComments: false
+attribution: Airflow on Kubernetes Architecture, <a href="https://commons.wikimedia.org/wiki/File:WMF-DPE-SRE-Airflow-on-Kubernetes-architecture.png">Brouberol</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>, via Wikimedia Commons
+---
+### Prerequisite
+[Setup cloudnative-pg database](../../posts/setup-cloudnativ-pg-database)
+### Goal
+Deploy additional apps that may require an existing postgreSQL database.
+### Overview
+Here's a simplification of the steps we follow:
+- Find an example of the app you want on github using `kubesearch.dev`, and copy the app files into your repo.
+- Look for any missing secrets and read the app's documentation to find out how to obtain the missing secrets. Add them to your secrets manager if necessary. 
+- Optionally copy in the helm repository for the app and update `kustomization.yaml` to include the new helm repository.
+- Create a new feature branch, and then commit and push your changes.
+- On github, compare the feature branch to main and create a new pull request.
+- Review the changes and ensure the automated flux checks pass. If they do, merge the pull request into main. If not, resolve any errors reported by the flux checks and commit them, then re-run the flux checks and repeat this step.
+- Checkout the main branch locally and sync the changes we just merged into main.
+- Run `task kubernetes:resources` and wait for the app resources become ready. 
+### Instructions
+If you have followed along with each prerequisite step, you may have noticed a pattern or similarities with the previous deployments. Here are some generic instructions which should apply to deploying any app, but for this example we'll be deploying [Sonarr](https://github.com/Sonarr/Sonarr).
+
+1. Use `kubesearch.dev` to search github for helm releases and repos with examples of the app you want to install.
+2. Clone their repo and copy the application into your `kubernetes/apps` folder. It may be helpful to create a new subdirectory if the app belongs to a unique ecosystem (i.e. `apps/media` for plex related apps, `apps/home` for home-assistant, etc.).
+3. Look within the application's `app` folder for an `externalsecret.yaml` file. If this file exists, inspect the code for any API keys, tokens, usernames, or secrets that are needed.  Look at the documentation for that app to learn how to generate your own API key, find application ids, tokens, setup accounts, or whatever else needs to be done to fill in the secrets.
+
+Here is an example `externalsecret.yaml` file for [Sonarr](https://github.com/Sonarr/Sonarr). This file is from [onedr0p's home-ops repo](https://github.com/onedr0p/home-ops/blob/main/kubernetes/main/apps/default/sonarr/app/externalsecret.yaml):
+```
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/external-secrets.io/externalsecret_v1beta1.json
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: sonarr
+spec:
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: onepassword-connect
+  target:
+    name: sonarr-secret
+    template:
+      engineVersion: v2
+      data:
+        SONARR__AUTH__APIKEY: "{{ .SONARR_API_KEY }}"
+        SONARR__POSTGRES__HOST: &dbHost postgres16-rw.database.svc.cluster.local
+        SONARR__POSTGRES__PORT: "5432"
+        SONARR__POSTGRES__USER: &dbUser "{{ .SONARR_POSTGRES_USER }}"
+        SONARR__POSTGRES__PASSWORD: &dbPass "{{ .SONARR_POSTGRES_PASSWORD }}"
+        SONARR__POSTGRES__MAINDB: &dbName sonarr_main
+        PUSHOVER_TOKEN: "{{ .SONARR_PUSHOVER_TOKEN }}"
+        PUSHOVER_USER_KEY: "{{ .PUSHOVER_USER_KEY }}"
+        INIT_POSTGRES_DBNAME: *dbName
+        INIT_POSTGRES_HOST: *dbHost
+        INIT_POSTGRES_USER: *dbUser
+        INIT_POSTGRES_PASS: *dbPass
+        INIT_POSTGRES_SUPER_PASS: "{{ .POSTGRES_SUPER_PASS }}"
+  dataFrom:
+    - extract:
+        key: sonarr
+    - extract:
+        key: cloudnative-pg
+    - extract:
+        key: pushover
+```
+- First, set the `spec.secretStoreRef.name` to `bitwarden-secrets-manager` if using Bitwarden.
+- Next, look for anything in `spec.target.template.data`. The format of the secrets may vary, so look at other apps for more examples if you are confused about how to parse in the secrets.
+- In this case, the `spec.dataFrom` field will attempt to `- extract` the keys from the secrets named `sonarr, cloudnative-pg, and pushover` from Bitwarden Secrets Manager. So we know we need to create a secret in Bitwarden Secrets Manager named `sonarr` that contains all the keys beginning with `.SONARR` and their values. 
+- If you have been following along with this guide, you will already have the secrets named `cloudnative-pg` and `pushover`.
+-  So, let's add the `sonarr` secret in Bitwarden Secrets Manager. Create the new secret named `sonarr` and add the key:values pairs:
+`SONARR_API_KEY: <your_sonarr_api_key>`
+`SONARR_POSTGRES_USER: <pick_a_username>`
+`SONARR_POSTGRES_PASSWORD: <pick_a_password>`
+`SONARR_PUSHOVER_TOKEN: <new_pushover_app_token>`
+
+- We're lacking the Sonarr API key and the pushover token, so this should clue us in that we need to go retrieve these tokens from the third party providers. Create an account on Sonarr and follow their documentation to receive an API key. Likewise, log into Pushover and create a new application named Sonarr to get a Sonarr specific Pushover token. There's a lot of reading between the lines here since each application will work differently. Be sure to thoroughly consult the documentation and pricing guidelines for any app you are setting up, and only save api keys or other sensitive information inside Bitwarden Secrets Manager.
+
+4. If applicable, copy in the helm repository from the source repo's `kubernetes/flux/repositories/helm/<app_name>.yaml` into the same path in your project.
+   In the same directory, add the following line to the  `kustomization.yaml` file:
+` - ./<app-name>.yaml`
+5. Create a new feature branch and commit your changes.
+6. In your browser, navigate to your repo on github, and select "compare" to compare the new branch and create a pull request. Review your changes then create a pull request if everything looks good.
+7. Let the checks run, if they all pass then it's safe to accept the pull request and merge it in to main. Then, delete the feature branch you created.
+8. Make sure to checkout the main branch locally if you are still on the local feature branch.
+9. Once on main, fetch the changes from origin/main (remote branch). Then pull the changes to update your local main branch. 
+10. Run `task kubernetes:resources` and wait for the app resources become ready. 
+### Summary
+Now that we have a few app deployments under our belt, let's review all that we've done so far.
+
+We have configured:
+- A home network that support VLANs, split DNS, Cloudflare tunneling, and more.
+- Three mini-PCs running Talos Linux to act as control-plane AND worker nodes for our flux enabled Kubernetes cluster.
+- Integrated GitHub Actions that run flux diff checks to validate and test committed code before merging into main.
+- Automatic resource deployments and dependency updates provided by flux and Renovate.
+- DNS and SSL support from Cloudflare and external access to specific applications with Cloudflare Tunnel. Ingress-nginx manages internal and external connectivity along with external-dns and cloudflared.
+- External Secrets, Bitwarden Secrets Manager, and bws-cache to securely distribute encrypted secrets within our cluster from a single protected secrets store managed outside the cluster.
+- Metrics, logging, and alerts using the api keys and passwords stored in Bitwarden Secrets Manager.
+- cloudnative-pg, an open source postgreSQL database monitored by the metrics tools we deployed (Prometheus, Grafana, Alertmanager).
+- Support for additional apps, including those that require a postgreSQL database.
+
+From the apps we have deployed so far to Kubernetes there is a clear dependency tree:
+
+External Secrets > Bitwarden Secrets Manager/bws-cache > Prometheus/Grafana > Cloudnative-pg > Apps that need a database.
+
+However, as you continue adding new apps, you will notice quickly that this dependency tree will change. Some apps don't require a database, while some depend on multiple other apps to function, each with their own requirements. Some apps require connectivity to additional servers, local hardware, or cloud services which each require differing resources based on the scale of your project. How much time and money you invest into your lab should realistically reflect what you hope to get out of your project. Hopefully, you can now use your cluster to play around with different applications and decide what level of commitment is right for your use case.
+
+### Next Steps
+If you're feeling brave, now would be a good time to try writing your own standalone app which can be also be deployed via flux. You can build an app and then push the container image or helm chart to github, or you can host your own registry in your cluster via [Harbor](https://goharbor.io/), a free open-source registry.
+
+#### Helm Chart Releaser
+- To be posted!
+#### Harbor
+I have been able to deploy Harbor and host images there in the past, but I ran into issues pulling container images for some applications. Check `kubesearch.dev` for example deployments from others. 
+

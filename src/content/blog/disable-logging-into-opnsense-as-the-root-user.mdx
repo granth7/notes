@@ -1,0 +1,23 @@
+---
+title: Disable Logging Into OPNsense as the Root User
+description: Disabling the root user can increase security and helps with credential management.
+pubDate: Dec 6 2024
+published: true
+heroImage: /src/assets/disabled-root.jpg
+tags:
+  - networking
+  - opnsense
+disableComments: false
+attribution: Rusty Padlock, <a href="https://www.flickr.com/photos/31018257@N00/5829881796" title="[2005] Rusty Padlock &amp; Fence">Diego Torres Silvestre</a>, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via flickr
+---
+### About
+After enabling sudo for a non-root user, it is safe to disable the root user. Once this is done, you can create several admin users with sudo access and give them each their own password instead of having to rotate a shared root password among multiple admins.
+
+### Prerequisites
+[[Enable sudo for non-root user with admin privileges]] first so you can still perform root operations after root is disabled.
+
+### Instructions
+Follow the steps under 'Disable Root User' from [Disable Logging into OPNsense as the Root User (homenetworkguy.com)](https://homenetworkguy.com/how-to/disable-root-user-opnsense/).
+
+### References
+[Disable Logging into OPNsense as the Root User (homenetworkguy.com)](https://homenetworkguy.com/how-to/disable-root-user-opnsense/)

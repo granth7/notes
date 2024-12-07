@@ -1,0 +1,109 @@
+---
+title: Enable SSH Server
+description: Setup SSH access to OPNsense server.
+pubDate: Dec 6 2024
+published: true
+heroImage: /src/assets/ssh.jpg
+tags:
+  - networking
+  - opnsense
+disableComments: false
+attribution: SSH on Android phone, <a href="https://www.flickr.com/photos/36813960@N00/4095692874" title="SSH on my Droid">John Blyberg</a>, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via flickr
+---
+### About
+It can be helpful to have SSH access to the server running OPNsense for a number of reasons, like in the case of web GUI lockout, editing service configs, or for administration purposes. This article is a prerequisite to [Enable sudo for non root users](../../posts/enable-sudo-for-non-root-user-with-admin-privileges), which itself is a prerequisite to [Disable logging into OPNsense as the Root User].
+
+### Prerequisites
+- Have installed OPNsense server
+- Your local device should be able to access OPNsense web dashboard
+- You have OPNsense login account that is a member of the built-in **_admins_** group. This can be root or another user acting as a system administrator. See [Create a New Administrator Account](../../posts/create-a-new-administrator-account) if you don't have a non-root user and you want to disable the root user later. 
+
+### Instructions
+1. Login via web GUI.
+2. Navigate to System > Settings > Administration.
+3. Under Secure Shell section, check Enable Secure Shell.
+4. Leave permit root login unchecked for security reasons
+5. Set the Listen interfaces to LAN (or a VLAN) such that the OpenSSH server is only listening for connections from local traffic and not exposed to the wider internet.
+6. From a terminal or command prompt, list the files in the ~/.ssh directory with
+```bash
+$ ls -1 ~/.ssh
+```
+
+Output:
+```bash
+config 
+id_rsa 
+id_rsa.pub
+known_hosts 
+known_hosts.old
+```
+
+7. Your public key is named **_id_rsa.pub_**. If there is none in your machine, then generate it on Linux / Unix based systems using the following commands.
+
+```bash
+$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/jmutai/.ssh/id_rsa):
+Created directory '/home/jmutai/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/jmutai/.ssh/id_rsa
+Your public key has been saved in /home/jmutai/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:bgcrnow9O7wKbgeOdJ6kO2CnwPvpW5kGY84rMDv+DPY jmutai@josphat-devops2
+The key's randomart image is:
++---[RSA 3072]----+
+|                 |
+|                 |
+|                 |
+|                 |
+|.  +    S        |
+|=+=+o o. o       |
+|*BX+.*. + .      |
+|=B*+*=++ .       |
+|.=OE+.B=         |
++----[SHA256]-----+
+```
+
+8. You will need to copy the contents in the file for use in OPNsense.
+
+```bash
+cat ~/.ssh/id_rsa.pub
+```
+
+MacOS: Highlight entire key starting with ssh-rsa to the = character at the end of the string. Then right click (2 finger tap on touchpad) to copy.
+
+9. Next go to OPNsense web console, then find **System** –> **Users** section. Select the user to edit using the **pencil** icon.
+
+![Enable SSH Server OPNsense 03](https://computingforgeeks.com/wp-content/uploads/2024/01/Enable-SSH-Server-OPNsense-03-1024x143.png?ezimgfmt=rs:484x68/rscb23/ng:webp/ngcb23 "How To Enable and Start SSH Server on OPNsense 4")
+
+Paste the copied key for the selected user. In our example the user is **root.**
+
+![Enable SSH Server OPNsense 04](https://computingforgeeks.com/wp-content/uploads/2024/01/Enable-SSH-Server-OPNsense-04-1024x204.png?ezimgfmt=rs:484x96/rscb23/ng:webp/ngcb23 "How To Enable and Start SSH Server on OPNsense 5")
+
+If using a non-root user, set the login shell to /bin/sh otherwise the connection will close with a message 'This account is not currently available' as soon as you login.
+
+![[login-shell.png]]
+
+
+When done save the changes.
+
+10. Test the ssh connection 
+```bash
+ssh -i id_rsa root@your.router.ip.here
+```
+
+-i Selects a file from which the identity (private key) for public key authentication is read. So in this case id_rsa is the private key file we generated with the public key, so when we ssh the OPNSense ssh server checks its public key against the private key we are sending to authenticate.
+11. If it's your first time connecting, you may get the message
+```bash
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+Type 'yes' and hit enter to add this identity to your list of known hosts in known_hosts. The next time you connect, you can just use 
+```bash
+ssh root@your.router.ip.here
+```
+to connect since the identity has been saved in known_hosts.
+
+### References
+[How To Enable and Start SSH Server on OPNsense | ComputingForGeeks](https://computingforgeeks.com/how-to-enable-and-start-ssh-server-on-opnsense/)

@@ -1,0 +1,65 @@
+---
+title: Kubernetes Hardware Considerations
+description: Find out what you need to get started.
+pubDate: Dec 7 2024
+published: true
+heroImage: /src/assets/e-waste.jpg
+tags:
+  - kubernetes
+  - start
+disableComments: false
+attribution: E-Waste Landfill, <a href="https://commons.wikimedia.org/wiki/File:E-Waste_Landfill.jpg">George Hotelling</a>, <a href="https://creativecommons.org/licenses/by-sa/2.0">CC BY-SA 2.0</a>, via Wikimedia Commons
+---
+
+### What hardware do I need to start?
+
+  
+
+If you are looking into building your own home lab, chances are you already have all the hardware you need. That old laptop or PC in the closet is enough to run a single node cluster with [Minikube](https://minikube.sigs.k8s.io/docs/),[MicroK8s](https://microk8s.io/), or [K3s](https://k3s.io/). Before you go out to buy hardware for your homelab, try to use what you already have to get started. Once you have a single node cluster running, try deploying some applications until
+
+you need access to more resources. Then, you can begin exploring multi-node setups (either with VMs, multiple machines, or a mix of both) which contain three nodes at a minimum.
+
+  
+  
+
+### Why three nodes?
+
+  
+
+With three nodes, your cluster can handle a failure of any of the three nodes and still function, which is critical for maintaining availability. It also allows for fault tolerance during upgrades or maintenance,
+
+since one node can be updated at a time without affecting overall application availability. Having three nodes helps to distribute the load of various applications evenly across all nodes, which helps performance by not overloading a single node.
+
+  
+  
+
+### Which OS Should I Use?
+
+This site covers setting up a single Kubernetes cluster based off the following cluster template: https://github.com/onedr0p/cluster-template.
+
+The linked template allows us to manage our cluster as code in Github using [Flux](https://github.com/fluxcd/flux2), handle upgrades with automatic pull-request diffs via [Renovate](https://www.mend.io/renovate), and leverages templates to help install
+
+and manage the cluster.
+
+  
+
+The Flux cluster is deployed on top of [Talos Linux](https://github.com/siderolabs/talos) which is a modern OS made for running Kubernetes.
+
+  
+
+### Machine setup
+
+  
+
+See Onedr0p's cluster template [machine preparation](https://github.com/onedr0p/cluster-template?tab=readme-ov-file#-machine-preparation) for system requirements to get started.
+
+  
+
+### What do you use?
+
+  
+
+My three node cluster is composed of three HP ProDesk 400 Mini PCs, each acting as controller nodes since all nodes are able to act as workers in Talos.
+
+### Next Steps
+[Talos Kubernetes - Initial Machine Setup](../../posts/initial-machine-setup)

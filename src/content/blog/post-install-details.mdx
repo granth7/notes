@@ -1,0 +1,38 @@
+---
+title: Talos Kubernetes - Post Install Details (Split DNS)
+description: Configure split DNS so nginx can handle internal and external traffic.
+pubDate: Dec 7 2024
+published: false
+heroImage: /src/assets/install.jpg
+tags:
+  - networking
+  - opnsense
+  - kubernetes
+  - talos
+disableComments: false
+attribution: Installing solar panels, <a href="https://www.flickr.com/photos/28364885@N02/3049032865" title="Installing solar panels">Oregon Department of Transportation</a>, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via flickr
+---
+### Goal
+We want to configure split DNS so that internal addresses are routed via the internal nginx service, and external addresses are routed via the external nginx service. This allows us to use our domain for both internal and external addresses.
+### Prerequisites
+[Initial Machine Setup for Talos Flux Cluster](../../posts/initial-machine-setup)
+### Instructions
+Configure split DNS as mentioned in the post install instructions in github. Follow this guide:
+[How to Configure Split DNS in OPNsense using Unbound DNS (homenetworkguy.com)](https://homenetworkguy.com/how-to/configure-split-dns-opnsense-using-unbound/)
+
+In summary:
+1. Go to Services > Unbound DNS > Overrides > Domain Overrides
+2. Add new (select the '+' button)
+3. Check the box labeled 'Enabled'
+4. Enter your domain
+5. For IP address, use the IP of the k8s_gateway set in the cluster config.
+6. Optionally enter a description. I put 'Split DNS' to remind me why the rule is in place.
+7. Click save and then apply your changes. You may need to restart the Unbound DNS service.
+8. To test run `dig @${BOOTSTRAP_K8S_GATEWAY_ADDR} hubble.${SECRET.DOMAIN}`, if it returns `${BOOTSTRAP_METALLB_INGRESS_ADDR}` then your internal nginx should assign an internal ip to `hubble.${SECRET.DOMAIN}`. Check this with `kubectl get ingresses -A`. You should see something like this:
+```
+NAMESPACE    NAME        CLASS      HOSTS                      ADDRESS       PORTS 
+kube-system  hubble-ui   internal   hubble.${SECRET.DOMAIN}`   192.168.1.20  80    
+```
+
+### Next steps
+Check out [Talos Kubernetes - Add External Secrets](../../posts/add-external-secrets) to allow apps to securely pull secrets (api keys, tokens, etc.) with the added benefit of a cache to manage the pulls.

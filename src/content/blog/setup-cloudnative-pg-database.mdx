@@ -1,0 +1,41 @@
+---
+title: Talos Kubernetes - Deploy cloudnative-pg Database
+description: Cloudnative-pg is an open-source Kubernetes operator for postgreSQL.
+pubDate: Dec 7 2024
+published: false
+heroImage: /src/assets/latte.jpg
+tags:
+  - kubernetes
+  - talos
+disableComments: false
+attribution: Today's latte, PostgreSQL., <a href="https://www.flickr.com/photos/22322135@N00/6777888928" title="Today's latte, PostgreSQL.">Yuko Honda</a>, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via flickr
+---
+### Prerequisite
+[Talos Kubernetes - Deploy Metrics, Logging, and Alerts]
+### Goal
+Deploy a database to be used by future applications.
+### Instructions
+1. Clone my repo if you haven't and navigate to `/kubernetes/apps` in a file explorer or terminal.
+2. Copy the database folder into your project's `/apps` directory.
+3. In Bitwarden Secrets Manager, create a new secret called `cloudnative-pg` and add the values:
+`POSTGRES_SUPER_USER: <pick_a_username>`
+`POSTGRES_SUPER_PASS: <pick_a_password>`
+4. In `/cluster/cluster16.yaml`, modify the instances, storage size, resources, limits, and other parameters based on your needs.
+5. In `/cluster/service.yaml` set `io.cilium/lb-ipam-ips` to an unused ip address within the same network as your Kubernetes nodes.
+6. From my repo, copy `cloudnative-pg.yaml` from `kubernetes/flux/repositories/helm/` into the same path in your project.
+7. In the same directory, add the following line to the  `kustomization.yaml` file:
+` - ./cloudnative-pg.yaml`
+8. Create a new feature branch and commit your changes.
+9. In your browser, navigate to your repo on github, and select "Compare" to compare the new branch and create a pull request. Review your changes then create a pull request if everything looks good.
+10. Let the checks run, if they all pass then it's safe to accept the pull request and merge it in to main. Then, delete the feature branch you created.
+11. Make sure to checkout the main branch locally if you are still on the local feature branch.
+12. Once on main, fetch the changes from origin/main (remote branch). Then pull the changes to update your local main branch. 
+13. Run `task kubernetes:resources` and wait until the cloudnative-pg operator becomes ready. Then wait until the operator creates the amount of pods defined in the postgreSQL cluster (cluster16.yaml).
+14. In your browser, navigate to grafana.YOUR_DOMAIN. Sign into grafana with the username and password created in [[deploy-metrics-logging-alerts]].
+15. On the left hand side, select 'Dashboards'. Then find the dashboard named 'CloudNativePG' and select it to open the dashboard.
+16. In the text entry field labelled 'Cluster', input the cluster name. Mine is named 'postgres16'. Press Enter. In the top right of grafana, select the dropdown arrow next to the refresh icon, then select 'Off' to disable auto refresh. 
+17. If everything is working, a snapshot of cloudnative-pg's metrics will be displayed. 
+
+### Next
+[[add-additional-apps]].
+
