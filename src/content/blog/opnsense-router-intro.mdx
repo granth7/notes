@@ -13,24 +13,24 @@ attribution: OPNsense screenshot, <a href="https://commons.wikimedia.org/wiki/Fi
 ### Introduction
 If you are looking for more control over your network, installing [OPNsense](https://opnsense.org/) on a spare computer allows access to all the tools you could need to manage a home network. 
 
-I have a mini PC (HP ProDesk 400 G4) running OPNsense as the primary router managing traffic to/from my ISP (via my Netgear CM500 modem). I've been running this setup for several years, and am verify happy with the performance and stability compared to other consumer grade routers I've used in the past. OPNSense has great documentation to get started with a clean install here: [OPNsense documentation](https://docs.opnsense.org/).
+I have a mini PC (HP ProDesk 400 G4) running OPNsense as the primary router managing traffic to/from my ISP. I've been running this setup for several years, and am verify happy with the performance and stability compared to other consumer grade routers I've used in the past. OPNSense has great documentation to get started with a clean install here: [OPNsense documentation](https://docs.opnsense.org/).
 
 I have my router config regularly backed up to the cloud, you can find instructions in the docs here: [Cloud Backup — OPNsense documentation](https://docs.opnsense.org/manual/how-tos/cloud_backup.html#cloud-backup). If you use Google Drive you can do this for free as long as you stay within their 15GB limit. If you use gmail you're likely already using Google Drive storage, and the backups don't take up much space. There are options to control how often/how many backups are stored.
 
 I have mine set to save a copy of my config to the cloud every day, and it stores the past 60 days of history in case I need to revert to an older version. 
 
 ### Next Steps
-- Read OPNsense's [Hardware sizing & setup](https://docs.opnsense.org/manual/hardware.html)guide to determine if your hardware is capable of running OPNsense.
+- Read OPNsense's [Hardware sizing & setup](https://docs.opnsense.org/manual/hardware.html) guide to determine if your hardware is capable of running OPNsense.
 - Then, install OPNsense on your compatible hardware. You can then follow along with the articles listed below:
 
 #### Interfaces
-- [Assign a new interface]()
-- [Add new VLAN interface]()
-- [Setup new interface and DHCP]()
+- [Assign a new interface](../../posts/assign-a-new-interface)
+- [Add new VLAN interface](../../posts/add-new-vlan-interface)
+- [Setup new interface and DHCP](../../posts/setup-new-interface-and-dhcp)
 #### Services
-- [Setup Split DNS via Unbound DNS]()
+- [Setup Split DNS via Unbound DNS](../../posts/setup-split-dns-via-unbound-dns)
 #### System
-- [Create a New Administrator Account]()
-- [Disable logging into OPNsense as the root user]()
-- [Enable SSH Server]()
-- [Enable sudo for non-root user with admin privileges]()
+- [Create a New Administrator Account](../../posts/create-a-new-administrator-account)
+- [Disable logging into OPNsense as the root user](../../posts/disable-logging-into-opnsense-as-the-root-user)
+- [Enable SSH Server](../../posts/enable-ssh-server)
+- [Enable sudo for non-root user with admin privileges](../../posts/enable-sudo-for-non-root-user-with-admin-privileges)
