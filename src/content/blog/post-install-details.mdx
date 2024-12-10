@@ -1,9 +1,9 @@
 ---
-title: Talos Kubernetes - Post Install Details (Split DNS)
-description: Configure split DNS so nginx can handle internal and external traffic.
+title: Talos Kubernetes - Post Install Details (Flux with Cloudflare)
+description: After Talos has been installed, let's configure our Home DNS (Split DNS).
 pubDate: Dec 7 2024
 published: false
-heroImage: /src/assets/install.jpg
+heroImage: /src/assets/split-dns.jpg
 tags:
   - networking
   - opnsense
@@ -12,27 +12,42 @@ tags:
 disableComments: false
 attribution: Installing solar panels, <a href="https://www.flickr.com/photos/28364885@N02/3049032865" title="Installing solar panels">Oregon Department of Transportation</a>, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via flickr
 ---
-### Goal
-We want to configure split DNS so that internal addresses are routed via the internal nginx service, and external addresses are routed via the external nginx service. This allows us to use our domain for both internal and external addresses.
+### About
+Cluster resources with internal addresses are routed via the internal nginx service, and likewise external addresses are routed via the external nginx service. 
+Applications with their [ingress class](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class) set to `internal` will only be accessible to devices within the cluster,
+whereas those with an `external` ingress class will be publicly available to anyone on the internet.
+
+But what about when devices on your private network need to access an 'internal' resource, without being a part of the cluster?
+A common example would be accessing [Grafana](https://grafana.com/) dashboard metrics running internally at `grafana.my.domain` from your workstation.  
+This is exactly what Split DNS can accomplish.
+
 ### Prerequisites
 [Initial Machine Setup for Talos Flux Cluster](../../posts/initial-machine-setup)
 ### Instructions
-Configure split DNS as mentioned in the post install instructions in github. Follow this guide:
-[How to Configure Split DNS in OPNsense using Unbound DNS (homenetworkguy.com)](https://homenetworkguy.com/how-to/configure-split-dns-opnsense-using-unbound/)
+We will configure split DNS as mentioned in the [post install instructions in github](https://github.com/onedr0p/cluster-template?tab=readme-ov-file#-flux-w-cloudflare-post-installation). 
+To accomplish this in OPNsense, follow these steps:
 
-In summary:
-1. Go to Services > Unbound DNS > Overrides > Domain Overrides
+
+1. Go to Services > Unbound DNS > Query Forwarding
 2. Add new (select the '+' button)
-3. Check the box labeled 'Enabled'
-4. Enter your domain
-5. For IP address, use the IP of the k8s_gateway set in the cluster config.
+3. Ensure the box labeled 'Enabled' is checked.
+4. Enter your domain in the form of 'my.doamin'. This should be the same value used during cluster config under `bootstrap_cloudflare.domain` in `config.yaml`.
+5. For IP address, use the IP of the `k8s_gateway` set in the cluster config. This is found under `bootstrap_cloudflare.gateway_vip` in `config.yaml`.
 6. Optionally enter a description. I put 'Split DNS' to remind me why the rule is in place.
-7. Click save and then apply your changes. You may need to restart the Unbound DNS service.
-8. To test run `dig @${BOOTSTRAP_K8S_GATEWAY_ADDR} hubble.${SECRET.DOMAIN}`, if it returns `${BOOTSTRAP_METALLB_INGRESS_ADDR}` then your internal nginx should assign an internal ip to `hubble.${SECRET.DOMAIN}`. Check this with `kubectl get ingresses -A`. You should see something like this:
+7. Leave Port blank.
+8. Click save and then apply your changes. You may need to restart the Unbound DNS service.
+9. To test, run `dig gateway_vip hubble.your.domain`, replacing gateway_vip with its associated value. If it returns the value of `bootstrap_cloudflare.ingress` then your internal nginx should assign an internal ip to `hubble.your.domain`. Check with `kubectl get ingresses -A`. You should see something like this:
 ```
-NAMESPACE    NAME        CLASS      HOSTS                      ADDRESS       PORTS 
-kube-system  hubble-ui   internal   hubble.${SECRET.DOMAIN}`   192.168.1.20  80    
+NAMESPACE    NAME        CLASS      HOSTS                      ADDRESS       PORTS  AGE
+...
+kube-system  hubble-ui   internal   hubble.your.domain         192.168.1.20  80     1d
 ```
 
 ### Next steps
 Check out [Talos Kubernetes - Add External Secrets](../../posts/add-external-secrets) to allow apps to securely pull secrets (api keys, tokens, etc.) with the added benefit of a cache to manage the pulls.
+
+
+### References
+[Onedr0p's post install instructions in github](https://github.com/onedr0p/cluster-template?tab=readme-ov-file#-flux-w-cloudflare-post-installation)
+
+To learn more, read here: [How to Configure Split DNS in OPNsense using Unbound DNS (homenetworkguy.com)](https://homenetworkguy.com/how-to/configure-split-dns-opnsense-using-unbound/).
