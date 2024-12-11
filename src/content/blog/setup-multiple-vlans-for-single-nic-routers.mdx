@@ -92,10 +92,10 @@ Save this file in your cloud storage provider of choice as well as locally on yo
 WAN traffic comes in from the modem to port 1. It is then directed to the router via port 2 which then routes traffic back through port 2 to the appropriate VLAN. Firewall rules are used to block traffic to/from the wrong VLAN, effectively creating an independent network for each VLAN, complete with it's own subnet and IP range. Devices can communicate only within their VLAN, and not across to another VLAN once the proper firewall rules are in place.
 
 ### VLAN 901: LAN
-Devices connected to ports 3, 4, and 8 via ethernet are on the home LAN . Ports 3 and 4 are personal computers and port 8 is a wireless access point in broadcast mode so that mobile and IoT devices can access Wi-Fi.
+Devices connected to ports 3, 4, and 8 via ethernet are on the home LAN. Ports 3 and 4 are personal computers and port 8 is a wireless access point in broadcast mode so that mobile and IoT devices can access Wi-Fi.
 
 ### VLAN 902 : HOMELAB
-Devices connected to ports 5, 6, and 7 via ethernet are on the HOMELAB LAN
+Devices connected to ports 5, 6, and 7 via ethernet are on the HOMELAB LAN.
 This ensures that internet traffic directed to the homelab servers does not interfere with personal use devices and vice versa. Multiple VLANs allow control over network priority, so for example a personal device streaming video can be given higher priority over homelab server traffic. 
 
 To learn more, Wikipedia has a great article about the [OSI Model](https://en.wikipedia.org/wiki/OSI_model).
