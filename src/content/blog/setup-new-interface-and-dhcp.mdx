@@ -1,7 +1,7 @@
 ---
 title: Setup a New Network Interface and DHCP
 description: Create a network interface separate from the default network.
-pubDate: Dec 6 2024
+pubDate: Dec 9 2024
 published: true
 heroImage: /src/assets/dhcp.jpg
 tags:
@@ -14,14 +14,15 @@ attribution: 'DHCP: No Service, <a href="https://www.flickr.com/photos/joebeone/
 ### Prerequisite
 [Assign a new interface](../../posts/assign-a-new-interface)
 ### Instructions
+
+Overview of instructions from [homenetworkguy](https://homenetworkguy.com/how-to/configure-dhcp-vlans-opnsense/), check out his posts for full details:
 - Go to Interfaces > \[Homelab\] (Or whatever you named your new VLAN)
 - Check 'Enable Interface'.
 - In 'IPv4 Configuration Type' select Static IPv4.
 - In 'Static IPv4 address', enter the VLAN interface ip address and CIDR prefix. 
-- Now that the VLAN interfaces are configured properly, go to the “Services > ISC DHCPv4 > \[VLAN]” page where “VLAN” is the desired VLAN to configure. Click the “Enable the DHCP server”.
+- Now that the VLAN interfaces are configured properly, go to the “Services > ISC DHCPv4 > \[VLAN]” page where “VLAN” is the desired VLAN to configure. Select the “Enable the DHCP server” checkbox.
 - In the range boxes, you may enter any range you like within the available range.
-- Click Save.
-- If you define any static DHCP entries (as will be discussed below), you need to make sure it is outside the range so you might not want to make the range the entire usable address space.
+- Select Save.
 - Clone LAN firewall rules and point them to the new interface
 
 ### References

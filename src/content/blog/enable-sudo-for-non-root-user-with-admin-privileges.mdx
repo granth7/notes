@@ -1,7 +1,7 @@
 ---
 title: Enable Sudo For Non-Root User With Admin Privileges
 description: Make it easier to manage admin credentials.
-pubDate: Dec 6 2024
+pubDate: Dec 11 2024
 published: true
 heroImage: /src/assets/keys.jpg
 tags:
@@ -22,7 +22,7 @@ Before we disable the root user, however, we need to enable sudo for a non-root 
 ### Instructions
 1. Log in to OPNSenese and navigate to System > Settings > Administration > Authentication
 2. Set Sudo to Ask password and select the wheel, admins groups.
-![[../../assets/opnsense-admin-create.png]]
+![admins screenshot](../../assets/opnsense-admin-create.png)
 3. ssh into the server as the non-root user and check sudo permissions with sudo -l:
 ```bash
 ssh non-root@your.router.ip.here
@@ -37,4 +37,4 @@ User <non-root> may run the following commands on <hostname>:
 Upon entering the correct password, if everything is correct sudo will list our user's permissions. 
 
 ### Next Steps
-[[Disable logging into OPNSense as the root user]]
+[Disable logging into OPNsense as the root user](../../posts/disable-logging-into-opnsense-as-the-root-user)

@@ -13,7 +13,9 @@ attribution: Corporate LAN VLAN segmentation, <a href="https://commons.wikimedia
 ---
 ### About
 This guide is about how to configure multiple VLANs for a router with a single network interface card (NIC) with the help of port tagging on an unmanaged switch. 
-### Prerequisite 
+This is the second post in a series on networking with OPNsense, with the goal of supporting a small [homelab](https://linuxhandbook.com/homelab/). If you want to follow along with the series, start with [OPNsense Router Intro](https://notes.hender.tech/posts/opnsense-router-intro/).
+
+### Prerequisites 
 Required hardware: 
 - Netgear GS308E 8 port 1GB switch (or equivalent/better) with an ip address within your router's ip address range as specified by router's ip and subnet mask (i.e. ip of 192.168.0.1 and subnet mask of 255.255.255.0 gives a range from 192.168.0.2 to 192.168.0.254).
 ### Instructions
@@ -98,5 +100,6 @@ Devices connected to ports 3, 4, and 8 via ethernet are on the home LAN. Ports 3
 Devices connected to ports 5, 6, and 7 via ethernet are on the HOMELAB LAN.
 This ensures that internet traffic directed to the homelab servers does not interfere with personal use devices and vice versa. Multiple VLANs allow control over network priority, so for example a personal device streaming video can be given higher priority over homelab server traffic. 
 
-To learn more, Wikipedia has a great article about the [OSI Model](https://en.wikipedia.org/wiki/OSI_model).
 
+### Next Steps
+[Add new VLAN interface](../../posts/add-new-vlan-interface).

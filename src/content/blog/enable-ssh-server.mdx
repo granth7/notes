@@ -11,7 +11,9 @@ disableComments: false
 attribution: SSH on Android phone, <a href="https://www.flickr.com/photos/36813960@N00/4095692874" title="SSH on my Droid">John Blyberg</a>, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via flickr
 ---
 ### About
-It can be helpful to have SSH access to the server running OPNsense for a number of reasons, like in the case of web GUI lockout, editing service configs, or for administration purposes. This article is a prerequisite to [Enable sudo for non root users](../../posts/enable-sudo-for-non-root-user-with-admin-privileges), which itself is a prerequisite to [Disable logging into OPNsense as the Root User].
+It can be helpful to have SSH access to the server running OPNsense for a number of reasons, like in the case of web GUI lockout, editing service configs, or for administration purposes.
+ This article is a prerequisite to [Enable sudo for non root users](../../posts/enable-sudo-for-non-root-user-with-admin-privileges),
+ which itself is a prerequisite to [Disable logging into OPNsense as the root user](../../posts/disable-logging-into-opnsense-as-the-root-user).
 
 ### Prerequisites
 - Have installed OPNsense server
@@ -104,6 +106,10 @@ Type 'yes' and hit enter to add this identity to your list of known hosts in kno
 ssh root@your.router.ip.here
 ```
 to connect since the identity has been saved in known_hosts.
+
+### Next Steps
+[Enable sudo for non root users](../../posts/enable-sudo-for-non-root-user-with-admin-privileges)
+
 
 ### References
 [How To Enable and Start SSH Server on OPNsense | ComputingForGeeks](https://computingforgeeks.com/how-to-enable-and-start-ssh-server-on-opnsense/)
