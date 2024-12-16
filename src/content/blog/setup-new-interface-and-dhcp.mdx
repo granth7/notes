@@ -11,20 +11,33 @@ tags:
 disableComments: false
 attribution: 'DHCP: No Service, <a href="https://www.flickr.com/photos/joebeone/12286690114/in/photostream/" title="&quot;DHCP: No Service&quot;">Joe Hall</a>, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>, via flickr'
 ---
+### About
+
 ### Prerequisite
 [Assign a new interface](../../posts/assign-a-new-interface)
 ### Instructions
-
-Overview of instructions from [homenetworkguy](https://homenetworkguy.com/how-to/configure-dhcp-vlans-opnsense/), check out his posts for full details:
 - Go to Interfaces > \[Homelab\] (Or whatever you named your new VLAN)
 - Check 'Enable Interface'.
 - In 'IPv4 Configuration Type' select Static IPv4.
-- In 'Static IPv4 address', enter the VLAN interface ip address and CIDR prefix. 
+- In 'Static IPv4 address', enter the VLAN interface ip address and CIDR prefix. This can be a different address range than your existing LAN network.
+For example, if your LAN address range is 192.168.0.1/24, your HOMELAB address range can be 192.168.100.1/24. If you are unsure, refer to this 
+[Subnet Cheat Sheet](https://www.freecodecamp.org/news/subnet-cheat-sheet-24-subnet-mask-30-26-27-29-and-other-ip-address-cidr-network-references/).
 - Now that the VLAN interfaces are configured properly, go to the “Services > ISC DHCPv4 > \[VLAN]” page where “VLAN” is the desired VLAN to configure. Select the “Enable the DHCP server” checkbox.
 - In the range boxes, you may enter any range you like within the available range.
 - Select Save.
-- Clone LAN firewall rules and point them to the new interface
+- (Optional) If you would like to configure DHCP static ip mappings for devices on this network, select the '+'. Enter the MAC address, IP address (Make sure the address is outside the dynamic range you set previously),
+and hostname for each device. Save.
+- Clone LAN firewall rules and point them to the new interface. Go to Firewall > Rules > LAN.
+- For each protocol rule: Select the clone action, edit the selected interface to be the new interface, e.g. HOMELAB, the select Save.
+
+### Next Steps
+If everything went well, you should now have a separate VLAN network. Note that devices will be able to communicate between your LAN network and new VLAN unless you add firewall rules to block LAN traffic on the new VLAN. 
+If you want to setup a Kubernetes cluster, it may be helpful to get it fully setup first before adding firewall rules to block LAN traffic.
+This way you will be able to run install commands, ping, or ssh into the machines without them being isolated from your workstation.
+
+Continue on to [Kubernetes Hardware Considerations](../../posts/hardware-considerations) to build a homelab on top of the new VLAN network you created. 
 
 ### References
-[How to Configure DHCP When Using VLANs in OPNsense (homenetworkguy.com)](https://homenetworkguy.com/how-to/configure-dhcp-vlans-opnsense/)
-[How to Configure VLANs in OPNsense (homenetworkguy.com)](https://homenetworkguy.com/how-to/configure-vlans-opnsense/)
+- [How to Configure DHCP When Using VLANs in OPNsense (homenetworkguy.com)](https://homenetworkguy.com/how-to/configure-dhcp-vlans-opnsense/)
+- [How to Configure VLANs in OPNsense (homenetworkguy.com)](https://homenetworkguy.com/how-to/configure-vlans-opnsense/)
+- [Subnet Cheat Sheet](https://www.freecodecamp.org/news/subnet-cheat-sheet-24-subnet-mask-30-26-27-29-and-other-ip-address-cidr-network-references/)
