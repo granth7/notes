@@ -36,7 +36,8 @@ Prometheus handles alerts via [Alertmanager](https://prometheus.io/docs/alerting
 **Pushover:** I configured Alertmanager to use [Pushover](https://pushover.net/)to send push notifications to my phone for any severe or critical alerts. They offer a 30-day free-trial then it's a 5$ one time payment per device. At the time of writing I'm still evaluating the trial.
 
 #### Other considerations
-Some people prefer their notifications to go to Slack or Discord (both integrate with Alertmanager) so that all of their communications are in a single application. Personally I prefer to separate the alerting task into its own app so I don't have to wade through a bunch of channels to find out if there is an alert or if someone posted a meme.
+Some people prefer their notifications to go to Slack or Discord (both integrate with Alertmanager) so that all of their communications are in a single application.
+Personally, I prefer to separate the alerting task into its own app so I don't have to search multiple channels to find out if there is an alert or if someone posted a meme.
 
 ### Instructions
 1. Clone my repo if you haven't and navigate to `/kubernetes/apps` in a file explorer or terminal.
@@ -57,10 +58,13 @@ Some people prefer their notifications to go to Slack or Discord (both integrate
    `ALERTMANAGER_HEARTBEAT_URL: <https://hc-ping.com/<your-heartbeat-check>`
    Select 'Save'.
 8. Integrate the check with Pushover. On healthchecks.io go to Integrations then find Pushover and subscribe to it. Fill out the necessary information to sign up for Pushover, then when you're done set the integration in the check.
-9. [Register your application](https://pushover.net/apps/build)on Pushover to get an API token. Save this value in the same 'alertmanager' secret as above, leaving an empty line between the previous key:value pair. The whole value should look like this:
+9. [Register your application](https://pushover.net/apps/build)on Pushover to get an API token. Save this value in the same 'alertmanager' secret as above [as valid json](https://jsonlint.com/). It should look like this:
 ```
-ALERTMANAGER_HEARTBEAT_URL: <https://hc-ping.com/<your-heartbeat-check>
-ALERTMANAGER_PUSHOVER_TOKEN: <your-pushover-api-token>
+{
+  "ALERTMANAGER_HEARTBEAT_URL": "<https://hc-ping.com/<your-heartbeat-check>",
+  "ALERTMANAGER_PUSHOVER_TOKEN": "<your-pushover-api-token>"
+}
+
 ```
 Select 'Save'.
 10. Grab your Pushover user key from the [Pushover homepage](pushover.net) and put it in a secret named 'pushover'. The value should be in the form of:
@@ -74,6 +78,16 @@ Select 'Save'.
 17. Download the Pushover client (mobile or desktop) and start the free trial. 
 18. If everything works in your cluster you won't see any alerts, but you can curl a heartbeat failure to test Pushover:
 `curl --retry 3 https://hc-ping.com/<your-heartbeat-check>/fail`
+19. A notification should appear on your phone if you installed the pushover app and setup everything correctly.
 
 ### Next
 [Talos Kubernetes - Deploy cloudnative-pg Database](../../posts/setup-cloudnative-pg-database). We will use Prometheus and Grafana to visualize metrics for this new database and verify that it was installed successfully.
+
+### References
+- [Grafana](https://grafana.com/docs/grafana/latest/introduction/)
+- [Prometheus](https://grafana.com/docs/grafana/latest/fundamentals/intro-to-prometheus/)
+- [Loki](https://grafana.com/docs/loki/latest/)for logging
+- [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/).
+- [healthchecks.io](https://healthchecks.io).
+- [Pushover](https://pushover.net/).
+- [Json validator (JSONLint.com)](https://jsonlint.com/).

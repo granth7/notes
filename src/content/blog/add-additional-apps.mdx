@@ -2,7 +2,7 @@
 title: Talos Kubernetes - Add Existing Apps
 description: How to add existing, prebuilt apps to your cluster.
 pubDate: Dec 18 2024
-published: false
+published: true
 heroImage: /src/assets/kube-apps.png
 tags:
   - kubernetes
@@ -11,7 +11,7 @@ disableComments: false
 attribution: Airflow on Kubernetes Architecture, <a href="https://commons.wikimedia.org/wiki/File:WMF-DPE-SRE-Airflow-on-Kubernetes-architecture.png">Brouberol</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>, via Wikimedia Commons
 ---
 ### Prerequisite
-[Setup cloudnative-pg database](../../posts/setup-cloudnativ-pg-database)
+[Setup cloudnative-pg database](../../posts/setup-cloudnative-pg-database)
 ### Goal
 Deploy additional apps that may require an existing postgreSQL database.
 ### Overview
@@ -73,13 +73,19 @@ spec:
 - Next, look for anything in `spec.target.template.data`. The format of the secrets may vary, so look at other apps for more examples if you are confused about how to parse in the secrets.
 - In this case, the `spec.dataFrom` field will attempt to `- extract` the keys from the secrets named `sonarr, cloudnative-pg, and pushover` from Bitwarden Secrets Manager. So we know we need to create a secret in Bitwarden Secrets Manager named `sonarr` that contains all the keys beginning with `.SONARR` and their values. 
 - If you have been following along with this guide, you will already have the secrets named `cloudnative-pg` and `pushover`.
--  So, let's add the `sonarr` secret in Bitwarden Secrets Manager. Create the new secret named `sonarr` and add the key:values pairs:
-`SONARR_API_KEY: <your_sonarr_api_key>`
-`SONARR_POSTGRES_USER: <pick_a_username>`
-`SONARR_POSTGRES_PASSWORD: <pick_a_password>`
-`SONARR_PUSHOVER_TOKEN: <new_pushover_app_token>`
+-  So, let's add the `sonarr` secret in Bitwarden Secrets Manager. Create the new secret named `sonarr` and add the key:values pairs in proper json format:
+  ```
+  {
+    "SONARR_API_KEY": "<your_sonarr_api_key>",
+    "SONARR_POSTGRES_USER": "<pick_a_username>",
+    "SONARR_POSTGRES_PASSWORD": "<pick_a_password>",
+    "SONARR_PUSHOVER_TOKEN": "<new_pushover_app_token>"
+  }
+  ```
 
-- We're lacking the Sonarr API key and the pushover token, so this should clue us in that we need to go retrieve these tokens from the third party providers. Create an account on Sonarr and follow their documentation to receive an API key. Likewise, log into Pushover and create a new application named Sonarr to get a Sonarr specific Pushover token. There's a lot of reading between the lines here since each application will work differently. Be sure to thoroughly consult the documentation and pricing guidelines for any app you are setting up, and only save api keys or other sensitive information inside Bitwarden Secrets Manager.
+- We're lacking the Sonarr API key and the pushover token, so this should clue us in that we need to go retrieve these tokens from the third party providers. Create an account on Sonarr and follow their documentation to receive an API key. 
+Likewise, log into Pushover and create a new application named Sonarr to get a Sonarr specific Pushover token. There's a lot of reading between the lines here since each application will work differently.
+Be sure to thoroughly consult the documentation and pricing guidelines for any app you are setting up, and only save api keys or other sensitive information inside Bitwarden Secrets Manager.
 
 4. If applicable, copy in the helm repository from the source repo's `kubernetes/flux/repositories/helm/<app_name>.yaml` into the same path in your project.
    In the same directory, add the following line to the  `kustomization.yaml` file:
@@ -108,13 +114,16 @@ From the apps we have deployed so far to Kubernetes there is a clear dependency 
 
 External Secrets > Bitwarden Secrets Manager/bws-cache > Prometheus/Grafana > Cloudnative-pg > Apps that need a database.
 
-However, as you continue adding new apps, you will notice quickly that this dependency tree will change. Some apps don't require a database, while some depend on multiple other apps to function, each with their own requirements. Some apps require connectivity to additional servers, local hardware, or cloud services which each require differing resources based on the scale of your project. How much time and money you invest into your lab should realistically reflect what you hope to get out of your project. Hopefully, you can now use your cluster to play around with different applications and decide what level of commitment is right for your use case.
+However, as you continue adding new apps, you will notice quickly that this dependency tree will change. Some apps don't require a database, while some depend on multiple other apps to function, each with their own requirements. Some apps require connectivity to additional servers, local hardware, or cloud services which each require differing resources based on the scale of your project. 
+How much time and money you invest into your lab should realistically reflect what you hope to get out of your project. Hopefully, you can now use your cluster to play around with different applications and decide what level of commitment is right for you.
 
 ### Next Steps
-If you're feeling brave, now would be a good time to try writing your own standalone app which can be also be deployed via flux. You can build an app and then push the container image or helm chart to github, or you can host your own registry in your cluster via [Harbor](https://goharbor.io/), a free open-source registry.
+Deploy any existing app you want! If you enjoy gaming, setting up a dedicated server for friends to connect to is a fun exercise. If you search [kubesearch](kubesearch.dev) there are several examples for minecraft, satisfactory, valheim, and others to follow.
+If you would like a challenge, now would be a good time to build your own app to be deployed via flux.
+You could build an app and then push the container image or helm chart to github, or you can host your own registry in your cluster via [Harbor](https://goharbor.io/), a free open-source registry.
 
 #### Helm Chart Releaser
-- To be posted!
+[[Helm Releaser and .NET Aspire Intro]](../../posts/deploy-aspire-app)
 #### Harbor
-I have been able to deploy Harbor and host images there in the past, but I ran into issues pulling container images for some applications. Check `kubesearch.dev` for example deployments from others. 
+It's possible to deploy Harbor and host images locally, but it can be difficult to set up. Check [kubesearch](kubesearch.dev) for example deployments from others. 
 

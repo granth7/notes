@@ -2,7 +2,7 @@
 title: Talos Kubernetes - Deploy cloudnative-pg Database
 description: Cloudnative-pg is an open-source Kubernetes operator for postgreSQL.
 pubDate: Dec 17 2024
-published: false
+published: true
 heroImage: /src/assets/latte.jpg
 tags:
   - kubernetes
@@ -12,14 +12,19 @@ attribution: Today's latte, PostgreSQL., <a href="https://www.flickr.com/photos/
 ---
 ### Prerequisite
 [Talos Kubernetes - Deploy Metrics, Logging, and Alerts]
+[Setup cloudnative-pg database](../../posts/setup-cloudnativ-pg-database)
 ### Goal
 Deploy a database to be used by future applications.
 ### Instructions
-1. Clone my repo if you haven't and navigate to `/kubernetes/apps` in a file explorer or terminal.
+1. Clone [my repo](https://github.com/granth7/talos-flux-cluster) if you haven't and navigate to `/kubernetes/apps` in a file explorer or terminal.
 2. Copy the database folder into your project's `/apps` directory.
-3. In Bitwarden Secrets Manager, create a new secret called `cloudnative-pg` and add the values:
-`POSTGRES_SUPER_USER: <pick_a_username>`
-`POSTGRES_SUPER_PASS: <pick_a_password>`
+3. In Bitwarden Secrets Manager, create a new secret called `cloudnative-pg` and add the values in valid json format:
+  ```
+  {
+    "POSTGRES_SUPER_USER": "<pick_a_username>"`,
+    "POSTGRES_SUPER_PASS": "<pick_a_password>"`
+  }
+  ```
 4. In `/cluster/cluster16.yaml`, modify the instances, storage size, resources, limits, and other parameters based on your needs.
 5. In `/cluster/service.yaml` set `io.cilium/lb-ipam-ips` to an unused ip address within the same network as your Kubernetes nodes.
 6. From my repo, copy `cloudnative-pg.yaml` from `kubernetes/flux/repositories/helm/` into the same path in your project.

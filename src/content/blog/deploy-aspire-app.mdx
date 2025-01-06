@@ -1,0 +1,39 @@
+---
+title:  Helm Releaser and .NET Aspire Intro
+description: Create a .NET Aspire demo application and containerize it for deployment to our Kubernetes cluster.
+pubDate: Dec 19 2024
+published: true
+heroImage: /src/assets/app-host-resource-diagram.png
+tags:
+  - kubernetes
+  - .net
+  - ci
+  - cd 
+  - helm
+disableComments: false
+attribution: AppHost Resource Diagram, <a href="https://github.com/dotnet/docs-aspire/blob/f8159a16a8acdcb015648d35906e15364f311cc6/docs/media/app-host-resource-diagram.png">IEvangelist</a>, <a href="https://github.com/dotnet/docs-aspire/blob/main/LICENSE">MIT License</a>, via GitHub
+---
+
+### Goal
+Create a .NET Aspire demo application and containerize it for deployment to our Kubernetes cluster.
+### Overview
+
+>[.NET Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview) is an opinionated, cloud ready stack for building observable, production ready, distributed applications. .NET Aspire is delivered through a collection of NuGet packages that handle specific cloud-native concerns.
+Cloud-native apps often consist of small, interconnected pieces or microservices rather than a single, monolithic code base. Cloud-native apps generally consume a large number of services, such as databases, messaging, and caching.
+
+.NET Aspire is a great starting point for learning about how microservices operate within the .NET ecosystem. We will follow the .NET Aspire install and setup process, create a sample Aspire app, and then build, containerize, and deploy the sample app via [Aspir8](https://prom3theu5.github.io/aspirational-manifests/getting-started.html).
+### Instructions
+- Follow the steps in [Build your first .NET Aspire solution - .NET Aspire | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/build-your-first-aspire-app?pivots=visual-studio)
+- Then, commit your project to github and follow the steps in [helm/chart-releaser: Hosting Helm Charts via GitHub Pages and Releases](https://github.com/helm/chart-releaser) depending on whether your repo is public or private.
+
+### Next Steps
+Once you feel comfortable with the basics of .NET aspire and the helm chart releaser, you should try to build upon the demo and create your own app to be deployed via flux.
+I made a small application to show how to configure CI/CD with Aspir8 and github actions.
+
+See [[Setup CI/CD in .NET Aspire with Github Actions]](../../posts/setup-cicd-aspire) for details.
+
+### References 
+- [.NET Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview) 
+- [Aspir8](https://prom3theu5.github.io/aspirational-manifests/getting-started.html)
+- [Build your first .NET Aspire solution - .NET Aspire | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/build-your-first-aspire-app?pivots=visual-studio)
+- [helm/chart-releaser: Hosting Helm Charts via GitHub Pages and Releases](https://github.com/helm/chart-releaser)
