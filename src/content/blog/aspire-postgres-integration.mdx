@@ -143,11 +143,8 @@ In appname.AppHost's `Program.cs` file, create a resource with the connection st
 ```csharp
 var existingPostgres = builder.AddConnectionString("existingPostgres");
 
-builder.AddProject<Projects.appname_Web>("appname-webfrontend")
-.WithExternalHttpEndpoints()
-.WithReference(cache)
-.WithReference(apiService)
-.WithReference(existingPostgres);
+var apiService = builder.AddProject<Projects.appname_ApiService>("appname-apiservice")
+                 .WithReference(existingPostgres);
 ```
  
 In appname.ApiService's project files (appname.ApiService.csproj) add the Npgsql package:
@@ -275,6 +272,18 @@ We could easily change this, but we don't need that data yet since it's not bein
 
 When defining a schema, it's important to decide exactly what data should be stored and retrieved by the api service. 
 Careful planning will make features easier to maintain and implement in the long term.
+
+### Production Notes
+To have the deployed app connect to the database, we need a way to securely add the connection string without committing it directly to github.
+An easy way to do this is with environment variables.
+We'll use the same method described in [Talos Kubernetes - Deploy Metrics, Logging, and Alerts](../../posts/deploy-metrics-logging-alerts).
+See my deployment of my [sample app](https://github.com/granth7/talos-flux-cluster/tree/main/kubernetes/apps/default/etymo/app) for an example.
+In summary:
+ - Create a secret in BWS Manager where the value is the valid connection string. It should be in the form of `"Host=postgres16-rw.database.svc.cluster.local;Database=app;Username=app;Password=PASSWORD"`
+ - Create an `externalsecret.yaml` file that reads in the secret from BWS and creates a Kubernetes secret
+ - Pass in the name of the Kubernetes secret to the corresponding variable in `helmrelease.yaml`'s values.
+ - Ensure the secret has been created in Kubernetes, and then deploy your application.
+ - Check the pod logs and ensure the connection to the database succeeded.
 
 ### References
 [.NET Aspire PostgreSQL integration - .NET Aspire | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/aspire/database/postgresql-integration?tabs=dotnet-cli)
